@@ -1,29 +1,58 @@
 function buildMetadata(sample) {
 
-  // @TODO: Complete the following function that builds the metadata panel
-
-  // Use `d3.json` to fetch the metadata for a sample
-    // Use d3 to select the panel with id of `#sample-metadata`
-
-    // Use `.html("") to clear any existing metadata
-
-    // Use `Object.entries` to add each key and value pair to the panel
-    // Hint: Inside the loop, you will need to use d3 to append new
-    // tags for each key-value in the metadata.
-
-    // BONUS: Build the Gauge Chart
-    // buildGauge(data.WFREQ);
-}
+  var MetaData = `/metadata/${sample}`;
+  d3.json(MetaData).then(function(response) {
+ 
+  var panelData = d3.select("#sample-metadata");
+  panelData.html("");
+ 
+  var data = Object.entries(response);
+  data.forEach(function(item) {
+  panelData.append("div").text(item);
+ });
+ })};
 
 function buildCharts(sample) {
+  var samples = `/samples/${sample}`;
+  
+  d3.json(samples).then(function(response){
+    var topTenOtuIds = response.otu_ids.slice(0,10);
+    var topOtuLabels = response.otu_labels.slice(0,10);
+    var topTenSampleValues = response.sample_values.slice(0,10);
 
-  // @TODO: Use `d3.json` to fetch the sample data for the plots
+    var data = [{
+      "labels": topTenOtuIds,
+      "values": topTenSampleValues,
+      "hovertext": topOtuLabels,
+      "type": "pie"
+    }];
+    
+  Plotly.newPlot('pie', data);
 
-    // @TODO: Build a Bubble Chart using the sample data
+  d3.json(samples).then(function(response){
+    var bubbleOtuIds = response.otu_ids;
+    var bubbleOuLabels = response.otu_labels;
+    var bubbleSampleValues = response.sample_values;
 
-    // @TODO: Build a Pie Chart
-    // HINT: You will need to use slice() to grab the top 10 sample_values,
-    // otu_ids, and labels (10 each).
+    var bubbleChartData = {
+      mode: 'markers',
+      x: bubbleOtuIds,
+      y: bubbleSampleValues,
+      text: bubbleOuLabels,
+      marker: {color: bubbleOtuIds, colorscale: 'Rainbow', size: bubbleSampleValues}
+    };
+
+    var bblData = [bubbleChartData];
+
+    var layout = {
+      showlegend: false,
+      height: 600,
+      width: 1200
+      };
+    
+    Plotly.newPlot('bubble', bblData, layout); 
+  })
+})
 }
 
 function init() {
